@@ -1,0 +1,22 @@
+Metadata-Version: 1.1
+Name: FacebookSearch
+Version: 0.0.3
+Summary: A Python library to easily iterate public information found by the Facebook Graph API
+Home-page: http://github.com/ckoepp/FacebookSearch
+Author: Christian Koepp, Norbert Wiedermann
+Author-email: christian.koepp@tum.de
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: Operating System :: OS Independent
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content :: CGI Tools/Libraries

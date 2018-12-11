@@ -1,0 +1,10 @@
+requests>=0.8
+six
+
+[:python_version < "3.5"]
+typing
+
+[testing]
+coveralls
+pytest
+pytest-cov

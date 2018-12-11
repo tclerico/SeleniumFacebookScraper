@@ -1,0 +1,27 @@
+# -*- coding: utf-8 -*-
+
+class FacebookSearchException(Exception):
+    """
+    This Exception-based class is raised in case of an error within FacebookSearch
+    """
+
+    _error_codes = {
+            1000 : "No access token or no client ID/secret tuple found",
+            1001 : "Couldn't fetch a valid access token from Facebook API",
+            1002 : "Not a valid FacebookSearchOrder object",
+            1003 : "No results available",
+            1004 : "Neither a valid string nor list",
+            1005 : "Invalid string",
+            1006 : "Invalid float",
+            1007 : "Invalid integer",
+            }
+
+    def __init__(self, code, msg = None):
+        self.code = code
+        if msg:
+            self.message = msg
+        else:
+            self.message = self._error_codes.get(code)
+
+    def __str__(self):
+        return "Error %i: %s" % (self.code, self.message)
