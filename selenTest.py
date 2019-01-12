@@ -6,6 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 import time
 import sys
+import os
 
 
 def open_facebook():
@@ -23,10 +24,10 @@ def open_facebook():
 
     # --------------------------------------------------
 
-    # use your email
-    email.send_keys("")
-    # use your password
-    passwd.send_keys("")
+    # use your email & password !!!here they are set as environment variables!!!
+
+    email.send_keys(os.environ.get("EMAIL"))
+    passwd.send_keys(os.environ.get("PASSWORD"))
     passwd.send_keys(Keys.RETURN)
 
     # ----------------------------------------------------
@@ -52,30 +53,38 @@ def search_city(driver, city):
     input.send_keys(Keys.RETURN)
 
 
-
-
-
 def get_event_info(driver):
-
+    # wait for page to load
     time.sleep(2)
+
+    # get page url
+    url = driver.current_url
+
+    # get performers name(s)
+    #TODO make a better way to get the artists names -> if multiple
+    artists = find_artists(driver)
+
+    # get event name
     div = driver.find_element_by_css_selector("div[class^=_5g")
-    nameLink = div.find_element_by_tag_name('a')
+    event_name = div.find_element_by_tag_name('h1')
 
-
+    # get list of event info
     infolist = driver.find_element_by_id("event_summary")
     items = infolist.find_elements_by_tag_name('li')
     info = []
 
-
     for i in range(len(items)):
+        # date and time
         if i == 0:
             show_time = items[0].find_element_by_css_selector("div[class^=_xk")
             info.append(show_time.find_element_by_tag_name('div'))
+        # Venue
         if i == 1:
             location_div = items[1].find_element_by_css_selector("div[class^=_xk")
             inf = location_div.find_elements_by_css_selector("*")
             info.append(inf[0].text)
             info.append(inf[1].text)
+        # Ticket link
         if i == 2:
             try:
                 tickets = items[2].find_element_by_tag_name('a')
@@ -83,6 +92,7 @@ def get_event_info(driver):
                 info.append(ref)
             except:
                 print('blank entry')
+        # ticket link if there is an extra spot
         if i == 3:
             try:
                 tickets = items[3].find_element_by_tag_name('a')
@@ -91,25 +101,29 @@ def get_event_info(driver):
             except:
                 print('blank entry')
 
+    # format data into dict
     if len(info) > 3:
         event_info = {
-            'name': nameLink.text,
+            'name': event_name.text,
+            'artist(s)': artists,
             'host': info[1],
             'address': info[2],
             'time': info[0].text,
-            'tickets': info[3]
+            'tickets': info[3],
+            'url': url
         }
     else:
         event_info = {
-            'name': nameLink.text,
+            'name': event_name.text,
+            'artist(s)': artists,
             'host': info[1],
             'address': info[2],
             'time': info[0].text,
-            'tickets': 'N/A'
+            'tickets': 'N/A',
+            'url': url
         }
 
     return event_info
-
 
 
 def work_page(driver):
@@ -117,7 +131,7 @@ def work_page(driver):
     page_links = driver.find_elements_by_class_name("_7ty")
     for e in range(0, len(page_links)):
         links = driver.find_elements_by_class_name("_7ty")
-        print("Clicking " + str(e) + " element")
+        print("Clicking element " + str(e))
         links[e].click()
         info.append(get_event_info(driver))
         driver.back()
@@ -126,6 +140,32 @@ def work_page(driver):
     print(info)
 
 
+def find_artists(driver):
+    # get large div
+    div = driver.find_element_by_css_selector("div[class^=_5g")
+    # get smaller div with necessary info
+    info_div = div.find_element_by_css_selector("div[class^=_5g")
+    nameLinks = info_div.find_elements_by_tag_name('a')
+
+    # place all text into list
+    artists = []
+    for n in nameLinks:
+        artists.append(n.text)
+
+    if len(nameLinks) > 1:
+        try:
+            extras = nameLinks[len(nameLinks)-1].get_attribute('data-tooltip-content')
+            # remove item in last 'x more'
+            del artists[-1]
+            # add extra artists to list
+            for e in extras.splitlines():
+                artists.append(e)
+            return artists
+        except:
+            print('No Extra Artists')
+    else:
+        return artists
+
 
 def main():
     info = []
@@ -133,6 +173,7 @@ def main():
     time.sleep(2)
     # search_city(facebook, "New Brunswick, New Jersey")
     work_page(facebook)
+
 
 
 
