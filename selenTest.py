@@ -7,7 +7,12 @@ from selenium.webdriver.chrome.options import Options
 import time
 import sys
 import os
+import math
 
+# py file where environment vars are set
+from environ import *
+
+set_info()
 
 def open_facebook():
     #Logs into facebook
@@ -61,7 +66,7 @@ def get_event_info(driver):
     url = driver.current_url
 
     # get performers name(s)
-    #TODO make a better way to get the artists names -> if multiple
+    # TODO -> Check list of 'artist' names against venue names to eliminate venues from artist listings
     artists = find_artists(driver)
 
     # get event name
@@ -101,11 +106,12 @@ def get_event_info(driver):
             except:
                 print('blank entry')
 
+    true_artists = check_artists(info[1], artists)
     # format data into dict
     if len(info) > 3:
         event_info = {
             'name': event_name.text,
-            'artist(s)': artists,
+            'artist(s)': true_artists,
             'host': info[1],
             'address': info[2],
             'time': info[0].text,
@@ -115,7 +121,7 @@ def get_event_info(driver):
     else:
         event_info = {
             'name': event_name.text,
-            'artist(s)': artists,
+            'artist(s)': true_artists,
             'host': info[1],
             'address': info[2],
             'time': info[0].text,
@@ -145,26 +151,94 @@ def find_artists(driver):
     div = driver.find_element_by_css_selector("div[class^=_5g")
     # get smaller div with necessary info
     info_div = div.find_element_by_css_selector("div[class^=_5g")
-    nameLinks = info_div.find_elements_by_tag_name('a')
+    name_links = info_div.find_elements_by_tag_name('a')
 
     # place all text into list
     artists = []
-    for n in nameLinks:
+    for n in name_links:
         artists.append(n.text)
 
-    if len(nameLinks) > 1:
+    if len(name_links) > 1:
         try:
-            extras = nameLinks[len(nameLinks)-1].get_attribute('data-tooltip-content')
+            extras = name_links[len(name_links)-1].get_attribute('data-tooltip-content')
             # remove item in last 'x more'
             del artists[-1]
             # add extra artists to list
             for e in extras.splitlines():
                 artists.append(e)
-            return artists
         except:
             print('No Extra Artists')
+
+    return artists
+
+
+
+# removes the venue from the artist list if it exists
+def check_artists(venue, artists):
+    if artists.count(venue) > 0:
+        ndx = artists.index(venue)
+        del artists[ndx]
+    return artists
+
+
+def q_test(driver):
+    page_links = driver.find_elements_by_class_name("_7ty")
+    page_links[1].click()
+
+    time.sleep(2)
+
+    div = driver.find_element_by_css_selector("div[class^=_5g")
+    info_div = div.find_element_by_css_selector("div[class^=_5g")
+    nameLinks = info_div.find_elements_by_tag_name('a')
+
+    for a in nameLinks:
+        print(a.text)
+
+
+def date_select(driver, months):
+    # opens the calender to select date range
+    button = driver.find_element_by_class_name("_47ni")
+    button.click()
+    time.sleep(1)
+
+    # select current date
+    calendar = driver.find_element_by_class_name("_owz")
+    date_button = calendar.find_element_by_css_selector("span[data-sigil='touchable']")
+    date = date_button.text
+    date_button.click()
+    time.sleep(1)
+
+    # finds and presses button to change to next 2 months
+    num_pages = math.floor(months / 2)
+    correction_val = months/2
+    even_or_odd = num_pages - correction_val
+    if even_or_odd == 0:
+        num_pages -= 1
+
+
+    for pages in range(0,num_pages):
+        options = driver.find_element_by_class_name("_4_hv")
+        buttons = options.find_elements_by_tag_name('button')
+        next_month = buttons[1]
+        next_month.click()
+        time.sleep(1)
+
+    # select last date for desired month
+    calendar = driver.find_elements_by_class_name("_owz")
+    if even_or_odd == 0:
+        date_button = calendar[1].find_elements_by_css_selector("span[data-sigil='touchable']")
     else:
-        return artists
+        date_button = calendar[0].find_elements_by_css_selector("span[data-sigil='touchable']")
+
+    date_button[len(date_button) - 1].click()
+    time.sleep(1)
+
+    # select update button
+    update = driver.find_elements_by_class_name("_43rm")
+    update[1].click()
+    time.sleep(1)
+
+
 
 
 def main():
@@ -172,7 +246,8 @@ def main():
     facebook = open_facebook()
     time.sleep(2)
     # search_city(facebook, "New Brunswick, New Jersey")
-    work_page(facebook)
+    # work_page(facebook)
+    date_select(facebook, 5)
 
 
 
