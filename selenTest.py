@@ -135,14 +135,18 @@ def get_event_info(driver):
 
 def work_page(driver):
     info = []
+
+    # get links for all events
     page_links = driver.find_elements_by_class_name("_7ty")
-    for e in range(0, len(page_links)):
-        links = driver.find_elements_by_class_name("_7ty")
-        print("Clicking element " + str(e))
-        links[e].click()
+    print(len(page_links))
+    pages = []
+    for link in page_links:
+        pages.append(link.get_attribute('href'))
+
+    # navigate to each page and scrape information
+    for p in pages:
+        driver.get(p)
         info.append(get_event_info(driver))
-        driver.back()
-        time.sleep(3)
 
     print(info)
 
@@ -181,18 +185,18 @@ def check_artists(venue, artists):
     return artists
 
 
-def q_test(driver):
-    page_links = driver.find_elements_by_class_name("_7ty")
-    page_links[1].click()
-
-    time.sleep(2)
-
-    div = driver.find_element_by_css_selector("div[class^=_5g")
-    info_div = div.find_element_by_css_selector("div[class^=_5g")
-    nameLinks = info_div.find_elements_by_tag_name('a')
-
-    for a in nameLinks:
-        print(a.text)
+# def q_test(driver):
+#     page_links = driver.find_elements_by_class_name("_7ty")
+#     page_links[1].click()
+#
+#     time.sleep(2)
+#
+#     div = driver.find_element_by_css_selector("div[class^=_5g")
+#     info_div = div.find_element_by_css_selector("div[class^=_5g")
+#     nameLinks = info_div.find_elements_by_tag_name('a')
+#
+#     for a in nameLinks:
+#         print(a.text)
 
 
 def date_select(driver, months):
@@ -239,15 +243,6 @@ def date_select(driver, months):
 
 
 def load_all_events(driver):
-    # lists = driver.find_elements_by_class_name("uiList")
-    # event_list = lists[len(lists)-1].find_elements_by_tag_name('li')
-    # last_event = event_list[len(event_list)-1].find_element_by_tag_name('div')
-    # end = False
-    # try:
-    #     last = last_event.get_attribute("class")
-    # except:
-    #     end = True
-
     wait_time = 2.5
     # Get scroll height
     last_height = driver.execute_script("return document.body.scrollHeight")
@@ -271,10 +266,10 @@ def main():
     time.sleep(2)
     search_city(facebook, "Princeton, New Jersey")
     time.sleep(1)
-    date_select(facebook, 3)
+    date_select(facebook, 2)
     load_all_events(facebook)
     time.sleep(3)
-    # work_page(facebook)
+    work_page(facebook)
 
 
 
