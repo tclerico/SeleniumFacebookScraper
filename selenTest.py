@@ -14,6 +14,7 @@ from environ import *
 
 set_info()
 
+
 def open_facebook():
     #Logs into facebook
 
@@ -41,6 +42,7 @@ def open_facebook():
     driver.get("https://www.facebook.com/events/discovery/?suggestion_token=%7B%22city%22%3A%22default_112943832054341%22%2C%22event_categories%22%3A[%221821948261404481%22]%7D&acontext=%7B%22ref%22%3A51%2C%22source%22%3A2%2C%22source_dashboard_filter%22%3A%22discovery%22%2C%22action_history%22%3A%22[%7B%5C%22surface%5C%22%3A%5C%22discover_filter_list%5C%22%2C%5C%22mechanism%5C%22%3A%5C%22surface%5C%22%2C%5C%22extra_data%5C%22%3A%7B%5C%22dashboard_filter%5C%22%3A%5C%22discovery%5C%22%7D%7D]%22%2C%22has_source%22%3Atrue%7D")
     return driver
 
+
 def search_city(driver, city):
 
     more = driver.find_elements_by_class_name("_47ni")
@@ -66,7 +68,6 @@ def get_event_info(driver):
     url = driver.current_url
 
     # get performers name(s)
-    # TODO -> Check list of 'artist' names against venue names to eliminate venues from artist listings
     artists = find_artists(driver)
 
     # get event name
@@ -172,7 +173,6 @@ def find_artists(driver):
     return artists
 
 
-
 # removes the venue from the artist list if it exists
 def check_artists(venue, artists):
     if artists.count(venue) > 0:
@@ -215,7 +215,6 @@ def date_select(driver, months):
     if even_or_odd == 0:
         num_pages -= 1
 
-
     for pages in range(0,num_pages):
         options = driver.find_element_by_class_name("_4_hv")
         buttons = options.find_elements_by_tag_name('button')
@@ -239,15 +238,44 @@ def date_select(driver, months):
     time.sleep(1)
 
 
+def load_all_events(driver):
+    # lists = driver.find_elements_by_class_name("uiList")
+    # event_list = lists[len(lists)-1].find_elements_by_tag_name('li')
+    # last_event = event_list[len(event_list)-1].find_element_by_tag_name('div')
+    # end = False
+    # try:
+    #     last = last_event.get_attribute("class")
+    # except:
+    #     end = True
+
+    wait_time = 2.5
+    # Get scroll height
+    last_height = driver.execute_script("return document.body.scrollHeight")
+    while True:
+        # Scroll down to bottom
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+        # Wait to load page
+        time.sleep(wait_time)
+
+        # Calculate new scroll height and compare with last scroll height
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
 
 
 def main():
     info = []
     facebook = open_facebook()
     time.sleep(2)
-    # search_city(facebook, "New Brunswick, New Jersey")
+    search_city(facebook, "Princeton, New Jersey")
+    time.sleep(1)
+    date_select(facebook, 3)
+    load_all_events(facebook)
+    time.sleep(3)
     # work_page(facebook)
-    date_select(facebook, 5)
+
 
 
 
